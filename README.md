@@ -55,6 +55,20 @@ This project implements an intelligent Question Answering (QA) system that inter
 - `templates/`: Contains HTML templates for the web interface.
 - `static/css/style.css`: Contains CSS styles for the web interface.
 
+### Folder Structure
+system/
+├── flagged
+├── Output
+├── main_rag.py
+├── main.py
+├── templates/
+│   ├── base.html
+│   ├── home.html
+│   └── room.html
+├── static/
+│   └── css/
+│       └── style.css/
+
 ### Explanation of the Models and Libraries Used
 
 - **HuggingFace Transformers**: Used for implementing the language model to generate text responses.
