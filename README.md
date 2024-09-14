@@ -60,6 +60,7 @@ This project implements an intelligent Question Answering (QA) system that inter
 system/
 ├── flagged
 ├── Output
+│   └── audio.wav
 ├── main_rag.py
 ├── main.py
 ├── templates/
