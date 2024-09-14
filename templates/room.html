@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Room</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div id="chat-container">
+        <div id="room-code">
+            <strong>Room Code:</strong> {{ code }}
+        </div>
+        <div id="chat-box">
+            {% for message in messages %}
+                <div class="message">
+                    <strong>{{ message.name }}:</strong> {{ message.message }}
+                    {% if message.timestamp %}
+                        <span class="timestamp">{{ message.timestamp }}</span>
+                    {% endif %}
+                    {% if message.name == "LLM" %}
+                        <button onclick="speak('{{ message.message }}')">Speak</button>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+        <form id="message-form">
+            <input type="text" id="message-input" autocomplete="off">
+            <button type="submit">Send</button>
+        </form>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const form = document.getElementById('message-form');
+        const input = document.getElementById('message-input');
+        const chatBox = document.getElementById('chat-box');
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const message = input.value;
+            socket.emit('message', { data: message });
+            input.value = '';
+        });
+
+        socket.on('message', function(data) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            messageElement.innerHTML = `<strong>${data.name}:</strong> ${data.message}`;
+            if (data.timestamp) {
+                messageElement.innerHTML += ` <span class="timestamp">${data.timestamp}</span>`;
+            }
+            if (data.name === "LLM") {
+                const speakButton = document.createElement('button');
+                speakButton.innerText = 'Speak';
+                speakButton.onclick = function() {
+                    speak(data.message);
+                };
+                messageElement.appendChild(speakButton);
+            }
+            chatBox.appendChild(messageElement);
+        });
+
+        function speak(message) {
+            const speakButton = event.target;
+            speakButton.disabled = true;
+            speakButton.innerText = 'Loading...';
+            fetch(`/speak/${encodeURIComponent(message)}`)
+                .then(response => response.blob())
+                .then(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const audio = new Audio(url);
+                    audio.play();
+                    speakButton.disabled = false;
+                    speakButton.innerText = 'Speak';
+                })
+                .catch(() => {
+                    speakButton.disabled = false;
+                    speakButton.innerText = 'Speak';
+                    alert('Could not generate voice.');
+                });
+        }
+    </script>
+</body>
+</html>
